@@ -6,7 +6,7 @@ import pymysql
 import bcrypt
 
 app = Flask(__name__)
-app.secret_key = '717730305d8ed3cdc3f37eedaf000abe29f377cdc7800607'  # For session or additional security
+
 
 # Database connection
 db = pymysql.connect(

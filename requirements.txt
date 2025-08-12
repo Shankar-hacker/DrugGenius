@@ -6,3 +6,4 @@ pymysql
 bcrypt
 psycopg2-binary
 dotenv
+flask_sqlalchemy

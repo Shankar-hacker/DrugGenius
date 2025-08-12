@@ -3,17 +3,28 @@ from flask_mysqldb import MySQL
 import subprocess
 import os
 import pymysql
+import psycopg2
 import bcrypt
+from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-
+app.secret_key = '717730305d8ed3cdc3f37eedaf000abe29f377cdc7800607'  # For session or additional security
 
 # Database connection
-db = pymysql.connect(
-    host="localhost",
-    user="root",
-    password="root",
-    database="druggenius"
+# db = pymysql.connect(
+#     host="localhost",
+#     user="root",
+#     password="root",
+#     database="druggenius"
+# )
+
+db = psycopg2.connect(
+    host=os.getenv("DB_HOST"),
+    database=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    port=os.getenv("DB_PORT")
 )
 cursor = db.cursor()
 

@@ -4,3 +4,4 @@ flask_mysqldb
 MySQL
 pymysql
 bcrypt
+psycopg2-binary

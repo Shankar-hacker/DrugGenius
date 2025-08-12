@@ -12,7 +12,7 @@ app.secret_key = '717730305d8ed3cdc3f37eedaf000abe29f377cdc7800607'  # For sessi
 db = pymysql.connect(
     host="localhost",
     user="root",
-    password="",
+    password="root",
     database="druggenius"
 )
 cursor = db.cursor()

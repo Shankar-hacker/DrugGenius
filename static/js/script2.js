@@ -19,11 +19,8 @@ function showPage(page) {
         section.style.display = ''; // Reset the display property
     });
 
-    // Remove active class from all nav buttons
-    const allNavButtons = ['homeNavBtn', 'loginNavBtn', 'registerNavBtn', 'contactNavBtn'];
-    allNavButtons.forEach(btnId => {
-        document.getElementById(btnId)?.classList.remove('active');
-    });
+    // Remove active class from all nav buttons (generic)
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     
     // Show selected page and set active state
     switch(page) {
@@ -43,6 +40,8 @@ function showPage(page) {
             break;
         case 'recommendation':
             recommendationPage.classList.remove('hidden');
+            // If recommendation nav button exists mark it active
+            document.getElementById('recommendationNavBtn')?.classList.add('active');
             break;
         case 'contact':
             contactpage.classList.remove('hidden');
@@ -51,16 +50,24 @@ function showPage(page) {
     }
 }
 
-// Set up navigation event listeners
-const navigationHandlers = {
-    'homeNavBtn': 'home',
-    'loginNavBtn': 'login',
-    'registerNavBtn': 'register',
-    'contactNavBtn': 'contact'
-};
-
-Object.entries(navigationHandlers).forEach(([btnId, page]) => {
-    document.getElementById(btnId)?.addEventListener('click', () => showPage(page));
+// Set up navigation event listeners (delegated so dynamic buttons work)
+document.querySelector('.nav-links')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.nav-btn');
+    if (!btn) return;
+    // Map button id or text to page
+    const id = btn.id;
+    if (id === 'homeNavBtn') return showPage('home');
+    if (id === 'loginNavBtn') return showPage('login');
+    if (id === 'registerNavBtn') return showPage('register');
+    if (id === 'contactNavBtn') return showPage('contact');
+    if (id === 'recommendationNavBtn') return showPage('recommendation');
+    // Fallback: if button text matches known pages
+    const text = btn.textContent.trim().toLowerCase();
+    if (text === 'home') return showPage('home');
+    if (text === 'login') return showPage('login');
+    if (text === 'register') return showPage('register');
+    if (text === 'contact') return showPage('contact');
+    if (text === 'recommendation') return showPage('recommendation');
 });
 
 
@@ -84,9 +91,14 @@ document.getElementById('showLogin')?.addEventListener('click', (e) => {
 
 // Check if user is already logged in (you can modify this based on your authentication method)
 function checkAuthState() {
-    // Add your authentication check logic here
-    // For now, we'll assume user is not logged in
-    showPage('home');
+    // Simple client-side auth state using localStorage
+    const isLoggedIn = localStorage.getItem('dg_isLoggedIn') === 'true';
+    if (isLoggedIn) {
+        ensureRecommendationNav();
+        showPage('recommendation');
+    } else {
+        showPage('home');
+    }
 }
 
 // Initialize the page
@@ -475,9 +487,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     });
 
     if (response.ok) {
-        loginPage.style.display = 'none';
-        recommendationPage.style.display = 'block';
-        showPage('recommendation');
+    // Persist login state locally and add recommendation tab
+    localStorage.setItem('dg_isLoggedIn', 'true');
+    localStorage.setItem('dg_userEmail', email);
+    ensureRecommendationNav();
+    loginPage.style.display = 'none';
+    recommendationPage.style.display = 'block';
+    showPage('recommendation');
     } else {
         loginError.style.display = 'block';
     } 
@@ -485,13 +501,36 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
 document.getElementById('logoutBtn').addEventListener('click', function () {
     // Redirect to the login page
+    // Clear persistent auth and UI
+    localStorage.removeItem('dg_isLoggedIn');
+    localStorage.removeItem('dg_userEmail');
+    removeRecommendationNav();
     showPage('login');
-
-    // Clear user-specific data (optional)
-    // Example: localStorage.clear(); or sessionStorage.clear();
-
     alert('You have been logged out.');
 });
+
+// Create the recommendation nav button dynamically and wire it
+function ensureRecommendationNav() {
+    if (document.getElementById('recommendationNavBtn')) return; // already present
+    const navLinks = document.querySelector('.nav-links');
+    const btn = document.createElement('button');
+    btn.id = 'recommendationNavBtn';
+    btn.className = 'nav-btn';
+    btn.textContent = 'Recommendation';
+    btn.addEventListener('click', () => showPage('recommendation'));
+    // Insert after Home button (if exists) or append
+    const homeBtn = document.getElementById('homeNavBtn');
+    if (homeBtn && homeBtn.nextSibling) {
+        homeBtn.parentNode.insertBefore(btn, homeBtn.nextSibling);
+    } else {
+        navLinks.appendChild(btn);
+    }
+}
+
+function removeRecommendationNav() {
+    const btn = document.getElementById('recommendationNavBtn');
+    if (btn) btn.remove();
+}
 
 
 // JavaScript for navbar toggle

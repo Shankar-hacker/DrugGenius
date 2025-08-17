@@ -468,10 +468,24 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
     
     if (response.ok) {
-        alert('Registration successful! Please login.');
+        showToast('Registration successful! Please login.','success');
         registerPage.classList.add('hidden');
         loginPage.classList.remove('hidden');
         showPage('login');
+    } else {
+        // Try to extract server message, fallback to generic
+        let msg = 'Registration failed. Please try again.';
+        try {
+            const data = await response.json();
+            if (data && data.message) msg = data.message;
+        } catch (err) {
+            // ignore parse errors
+        }
+        if (registerError) {
+            registerError.textContent = msg;
+            registerError.style.display = 'block';
+        }
+        showToast(msg, 'error');
     }
 });
 
@@ -491,11 +505,24 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     localStorage.setItem('dg_isLoggedIn', 'true');
     localStorage.setItem('dg_userEmail', email);
     ensureRecommendationNav();
+    showToast('Login successful.','success');
     loginPage.style.display = 'none';
     recommendationPage.style.display = 'block';
     showPage('recommendation');
     } else {
-        loginError.style.display = 'block';
+        // Try to extract server message, fallback to generic
+        let msg = 'Invalid email or password.';
+        try {
+            const data = await response.json();
+            if (data && data.message) msg = data.message;
+        } catch (err) {
+            // ignore parse errors
+        }
+        if (loginError) {
+            loginError.textContent = msg;
+            loginError.style.display = 'block';
+        }
+        showToast(msg, 'error');
     } 
 });
 
@@ -506,8 +533,33 @@ document.getElementById('logoutBtn').addEventListener('click', function () {
     localStorage.removeItem('dg_userEmail');
     removeRecommendationNav();
     showPage('login');
-    alert('You have been logged out.');
+    showToast('You have been logged out.','info');
 });
+
+// Toast helper
+function showToast(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    if (!container) return; // no-op if not present
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <div class="toast-message">${message}</div>
+        <button class="close-btn" aria-label="Close">&times;</button>
+    `;
+
+    const closeBtn = toast.querySelector('.close-btn');
+    const remove = () => {
+        toast.style.animation = 'toast-out 200ms ease forwards';
+        setTimeout(() => toast.remove(), 200);
+    };
+    closeBtn.addEventListener('click', remove);
+
+    container.appendChild(toast);
+
+    // Auto remove
+    setTimeout(remove, duration);
+}
 
 // Create the recommendation nav button dynamically and wire it
 function ensureRecommendationNav() {

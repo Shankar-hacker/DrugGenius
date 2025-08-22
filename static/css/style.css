@@ -1418,7 +1418,7 @@ html {
 }
 
 #contact-page{
-    background-image: url('/static/images/cont.jpg');
+    background-image: url('/static/images/log.jpg');
     background-size: cover;           /* Scale the image to cover the entire screen */
     background-repeat: no-repeat;      /* Prevent the image from repeating */
     background-attachment: fixed;      /* Keep the background fixed during scrolling */
